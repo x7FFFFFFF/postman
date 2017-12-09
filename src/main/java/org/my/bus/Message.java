@@ -1,4 +1,4 @@
-package org.my.helpers.bus;
+package org.my.bus;
 
 
 

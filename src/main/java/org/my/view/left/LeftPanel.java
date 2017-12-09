@@ -1,5 +1,6 @@
 package org.my.view.left;
 
+import org.my.bus.MessageBus;
 import org.my.view.BasePanel;
 
 import javax.swing.*;
@@ -12,7 +13,8 @@ public class LeftPanel extends BasePanel {
     public LeftPanel() {
 
         JTabbedPane tabbedPane = new JTabbedPane();
-        BasePanel favoritsPane = new FavoritsPanel();
+        FavoritsPanel favoritsPane = new FavoritsPanel();
+        MessageBus.INSTANCE.publishListener(favoritsPane);
         tabbedPane.addTab(favoritsPane.getTranslatedName(), null, favoritsPane,
                 "Does nothing");
 

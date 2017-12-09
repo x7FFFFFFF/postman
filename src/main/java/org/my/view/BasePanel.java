@@ -1,8 +1,6 @@
 package org.my.view;
 
 import org.my.helpers.LocaleManager;
-import org.my.helpers.bus.Message;
-import org.my.helpers.bus.MessageBus;
 
 import javax.swing.*;
 

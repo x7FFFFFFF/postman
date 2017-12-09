@@ -2,8 +2,8 @@ package org.my.view.right.response;
 
 import org.my.controller.right.request.RequestPanelController;
 import org.my.helpers.UiHelper;
-import org.my.helpers.bus.Message;
-import org.my.helpers.bus.MessageBus;
+import org.my.bus.Message;
+import org.my.bus.MessageBus;
 import org.my.http.client.HttpResponse;
 import org.my.view.BasePanel;
 import org.my.view.StatusBarPanel;

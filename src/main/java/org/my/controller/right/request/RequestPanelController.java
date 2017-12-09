@@ -1,8 +1,8 @@
 package org.my.controller.right.request;
 
-import org.my.helpers.bus.IBusEventListener;
-import org.my.helpers.bus.Message;
-import org.my.helpers.bus.MessageBus;
+import org.my.bus.IBusEventListener;
+import org.my.bus.Message;
+import org.my.bus.MessageBus;
 import org.my.http.client.HttpRequest;
 import org.my.http.client.HttpResponse;
 import org.my.http.client.SimpleHttpClient;

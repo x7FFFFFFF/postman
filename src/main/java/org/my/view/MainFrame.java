@@ -1,6 +1,6 @@
 package org.my.view;
 
-import org.my.helpers.UiHelper;
+import org.my.bus.MessageBus;
 import org.my.view.left.LeftPanel;
 import org.my.view.right.RightPanel;
 
@@ -15,6 +15,7 @@ import static org.my.helpers.UiHelper.createSplitPane;
 public final class MainFrame extends JFrame {
     private final LeftPanel leftPane = new LeftPanel();
     private final RightPanel rightPane = new RightPanel();
+
     private Component currentContent;
 
     public LeftPanel getLeftPane() {
@@ -33,6 +34,7 @@ public final class MainFrame extends JFrame {
     }
 
     private MainFrame() {
+        MessageBus.INSTANCE.publishListener(rightPane);
         Container contentPane = getContentPane();
         contentPane.setLayout(new BorderLayout());
 

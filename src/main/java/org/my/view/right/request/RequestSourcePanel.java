@@ -1,13 +1,15 @@
 package org.my.view.right.request;
 
+import org.my.bus.IBusEventListener;
+import org.my.controller.left.FavoritsPanelController;
+import org.my.controller.left.RequestNode;
 import org.my.controller.right.request.RequestPanelController;
 import org.my.helpers.UiHelper;
-import org.my.helpers.bus.Message;
-import org.my.helpers.bus.MessageBus;
+import org.my.bus.Message;
+import org.my.bus.MessageBus;
 import org.my.http.client.HttpRequest;
 import org.my.http.client.HttpRequestParseException;
 import org.my.view.BasePanel;
-import org.my.view.left.FavoritsPanel;
 
 import javax.swing.GroupLayout;
 import javax.swing.JButton;
@@ -21,7 +23,7 @@ import java.awt.Dimension;
 /**
  * Created by paramonov on 17.08.17.
  */
-public class RequestSourcePanel extends BasePanel {
+public class RequestSourcePanel extends BasePanel implements IBusEventListener {
 
     private final  JEditorPane requestHeadersPane = new JEditorPane();
     private final  JEditorPane requestBodyPane = new JEditorPane();
@@ -29,6 +31,7 @@ public class RequestSourcePanel extends BasePanel {
     private final  JButton sendButton = new JButton(translate("Send"));
     private final  JButton cancelButton = new JButton("Cancel");
     private final  JButton saveButton = new JButton("Save");
+    private RequestNode requestNode;
 
     public enum Actions {
         SEND_BUTTON_PUSHED,
@@ -37,8 +40,8 @@ public class RequestSourcePanel extends BasePanel {
         ACTIVATE_SEND_BUTTON
     }
 
-    public RequestSourcePanel() {
-
+    public RequestSourcePanel( RequestNode requestNode ) {
+        this.requestNode = requestNode;
 
 
         JSplitPane splitPane = UiHelper.createSplitPane(JSplitPane.VERTICAL_SPLIT, createUpperPanel(), createBottomPanel());
@@ -51,9 +54,7 @@ public class RequestSourcePanel extends BasePanel {
             MessageBus.INSTANCE.sentMessage(Actions.SAVE_BUTTON_PUSHED,  getHttpRequest());
         });
 
-        MessageBus.INSTANCE.publishListener(RequestPanelController.INSTANCE);
 
-        MessageBus.INSTANCE.publishListener(this::onEvent);
     }
 
     public HttpRequest getHttpRequest() {
@@ -67,16 +68,12 @@ public class RequestSourcePanel extends BasePanel {
         }
         return httpRequest;
     }
-
-    private void onEvent(Message message) {
+    @Override
+    public void onEvent(Message message) {
         if (message.getId()==Actions.DEACTIVATE_SEND_BUTTON){
             sendButton.setEnabled(false);
         } else if (message.getId()==Actions.ACTIVATE_SEND_BUTTON){
             sendButton.setEnabled(true);
-        } else if (message.getId() == FavoritsPanel.Actions.LOAD_REQUEST_FROM_TREE) {
-            HttpRequest request = message.getSource();
-            requestHeadersPane.setText(request.getSource());
-            requestBodyPane.setText(request.getBody());
         }
 
     }
