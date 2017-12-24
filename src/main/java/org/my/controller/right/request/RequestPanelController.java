@@ -1,8 +1,8 @@
 package org.my.controller.right.request;
 
-import org.my.bus.IBusEventListener;
-import org.my.bus.Message;
-import org.my.bus.MessageBus;
+import org.my.bus.MessageBusSingleton;
+import org.my.bus.Subscribe;
+import org.my.bus.TargetEvent;
 import org.my.http.client.HttpRequest;
 import org.my.http.client.HttpResponse;
 import org.my.http.client.SimpleHttpClient;
@@ -18,7 +18,7 @@ import java.beans.PropertyChangeListener;
 /**
  * Created by paramonov on 18.08.17.
  */
-public enum RequestPanelController implements PropertyChangeListener, IBusEventListener {
+public enum RequestPanelController implements PropertyChangeListener {
     INSTANCE( param -> new  SendRequestWorker((HttpRequest) param));
     private final IWorkerFactory<HttpResponse,Void> workerFactory;
 
@@ -52,8 +52,11 @@ public enum RequestPanelController implements PropertyChangeListener, IBusEventL
 
     private  SwingWorker<HttpResponse, Void> worker;
 
-    public  enum  Actions {
-        REQUEST_COMPLETED
+
+    public  static class  RequestCompletedEvent extends TargetEvent<HttpResponse> {
+        public RequestCompletedEvent(HttpResponse target) {
+            super(target);
+        }
     }
 
 
@@ -65,10 +68,10 @@ public enum RequestPanelController implements PropertyChangeListener, IBusEventL
        if  (evt.getPropertyName().equals("state")){
            SwingWorker.StateValue newValue=(SwingWorker.StateValue)evt.getNewValue();
            if (newValue==SwingWorker.StateValue.DONE){
-               MessageBus.INSTANCE.sentMessage(RequestSourcePanel.Actions.ACTIVATE_SEND_BUTTON);
+               MessageBusSingleton.INSTANCE.get().post(RequestSourcePanel.Events.ACTIVATE_SEND_BUTTON);
                try {
                    HttpResponse response = ((SwingWorker<HttpResponse, Void>) evt.getSource()).get();
-                   MessageBus.INSTANCE.sentMessage(Actions.REQUEST_COMPLETED, response);
+                   MessageBusSingleton.INSTANCE.get().post(new RequestCompletedEvent(response));
                } catch (Throwable e) {
                    //TODO: show error
                     StatusBarPanel.setStatusBarErr(e.getMessage());
@@ -82,15 +85,12 @@ public enum RequestPanelController implements PropertyChangeListener, IBusEventL
 
 
 
-    @Override
-    public  void onEvent(Message message) {
-        if (message.getId()== RequestSourcePanel.Actions.SEND_BUTTON_PUSHED){
-            MessageBus.INSTANCE.sentMessage(RequestSourcePanel.Actions.DEACTIVATE_SEND_BUTTON);
-            HttpRequest httpRequest =  message.getSource();
-            worker = workerFactory.createWorker(httpRequest);
+    @Subscribe
+    public  void onEvent(RequestSourcePanel.SendButtonPushedEvent event) {
+            MessageBusSingleton.INSTANCE.get().post(RequestSourcePanel.Actions.DEACTIVATE_SEND_BUTTON);
+            worker = workerFactory.createWorker(event.getTarget());
             worker.addPropertyChangeListener(this);
             worker.execute();
-        }
     }
 
 

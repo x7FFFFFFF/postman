@@ -9,4 +9,6 @@ public interface IEventBus {
     void unregister(Object object);
 
     void post(Object event);
+
+
 }

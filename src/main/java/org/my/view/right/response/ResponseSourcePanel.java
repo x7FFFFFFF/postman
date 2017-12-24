@@ -1,9 +1,9 @@
 package org.my.view.right.response;
 
+import org.my.bus.Subscribe;
 import org.my.controller.right.request.RequestPanelController;
 import org.my.helpers.UiHelper;
-import org.my.bus.Message;
-import org.my.bus.MessageBus;
+
 import org.my.http.client.HttpResponse;
 import org.my.view.BasePanel;
 import org.my.view.StatusBarPanel;
@@ -36,7 +36,6 @@ public class ResponseSourcePanel extends BasePanel {
 
         JSplitPane splitPane = UiHelper.createSplitPane(JSplitPane.VERTICAL_SPLIT, createUpperPanel(), createBottomPanel());
         addOnePane(splitPane);
-        MessageBus.INSTANCE.publishListener(this::onEvent);
     }
 
 
@@ -76,14 +75,11 @@ public class ResponseSourcePanel extends BasePanel {
 
 
 
-
-    private void onEvent(Message message) {
-        if (message.getId()== RequestPanelController.Actions.REQUEST_COMPLETED){
-           HttpResponse response = message.getSource();
-            responseBodyTextPane.setText(response.getBody());
-            responseHeadersTextPane.setText(response.getHeadersStr());
-            StatusBarPanel.setStatusBarMsg("Ответ получен!");
-        }
-
+    @Subscribe
+    private void onEvent(RequestPanelController.RequestCompletedEvent event) {
+        HttpResponse response = event.getTarget();
+        responseBodyTextPane.setText(response.getBody());
+        responseHeadersTextPane.setText(response.getHeadersStr());
+        StatusBarPanel.setStatusBarMsg("Ответ получен!");
     }
 }

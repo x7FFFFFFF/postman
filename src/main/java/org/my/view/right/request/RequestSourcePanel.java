@@ -1,29 +1,22 @@
 package org.my.view.right.request;
 
-import org.my.bus.IBusEventListener;
-import org.my.controller.left.FavoritsPanelController;
+
+import org.my.bus.MessageBusSingleton;
+import org.my.bus.Subscribe;
+import org.my.bus.TargetEvent;
 import org.my.controller.left.RequestNode;
-import org.my.controller.right.request.RequestPanelController;
 import org.my.helpers.UiHelper;
-import org.my.bus.Message;
-import org.my.bus.MessageBus;
 import org.my.http.client.HttpRequest;
 import org.my.http.client.HttpRequestParseException;
 import org.my.view.BasePanel;
 
-import javax.swing.GroupLayout;
-import javax.swing.JButton;
-import javax.swing.JEditorPane;
-import javax.swing.JLabel;
-import javax.swing.JPanel;
-import javax.swing.JScrollPane;
-import javax.swing.JSplitPane;
-import java.awt.Dimension;
+import javax.swing.*;
+import java.awt.*;
 
 /**
  * Created by paramonov on 17.08.17.
  */
-public class RequestSourcePanel extends BasePanel implements IBusEventListener {
+public class RequestSourcePanel extends BasePanel  {
 
     private final  JEditorPane requestHeadersPane = new JEditorPane();
     private final  JEditorPane requestBodyPane = new JEditorPane();
@@ -32,12 +25,28 @@ public class RequestSourcePanel extends BasePanel implements IBusEventListener {
     private final  JButton cancelButton = new JButton("Cancel");
     private final  JButton saveButton = new JButton("Save");
     private RequestNode requestNode;
+    public static class SendButtonPushedEvent extends TargetEvent<HttpRequest> {
+        public SendButtonPushedEvent(HttpRequest target) {
+            super(target);
+        }
+    }
+    public static class SaveButtonPushedEvent extends TargetEvent<HttpRequest> {
+        public SaveButtonPushedEvent(HttpRequest target) {
+            super(target);
+        }
+    }
+    public enum Events {
+        ACTIVATE_SEND_BUTTON,
+        DEACTIVATE_SEND_BUTTON,
+        SEND_BUTTON_PUSHED
+
+    }
 
     public enum Actions {
-        SEND_BUTTON_PUSHED,
-        SAVE_BUTTON_PUSHED,
+
+
         DEACTIVATE_SEND_BUTTON,
-        ACTIVATE_SEND_BUTTON
+
     }
 
     public RequestSourcePanel( RequestNode requestNode ) {
@@ -47,12 +56,12 @@ public class RequestSourcePanel extends BasePanel implements IBusEventListener {
         JSplitPane splitPane = UiHelper.createSplitPane(JSplitPane.VERTICAL_SPLIT, createUpperPanel(), createBottomPanel());
         addOnePane(splitPane);
        // sendButton.setAction(new SendRequestAction(requestHeadersPane.getDocument(), requestBodyPane.getDocument(), sendButton.getModel(), this ));
-        sendButton.addActionListener(e -> {
-            MessageBus.INSTANCE.sentMessage(Actions.SEND_BUTTON_PUSHED, getHttpRequest());
-        });
-        saveButton.addActionListener(e->{
-            MessageBus.INSTANCE.sentMessage(Actions.SAVE_BUTTON_PUSHED,  getHttpRequest());
-        });
+        sendButton.addActionListener(e ->
+             MessageBusSingleton.INSTANCE.get().post(new SendButtonPushedEvent(getHttpRequest()))
+        );
+        saveButton.addActionListener(e->
+            MessageBusSingleton.INSTANCE.get().post(new SaveButtonPushedEvent(getHttpRequest()))
+        );
 
 
     }
@@ -68,14 +77,17 @@ public class RequestSourcePanel extends BasePanel implements IBusEventListener {
         }
         return httpRequest;
     }
-    @Override
-    public void onEvent(Message message) {
-        if (message.getId()==Actions.DEACTIVATE_SEND_BUTTON){
-            sendButton.setEnabled(false);
-        } else if (message.getId()==Actions.ACTIVATE_SEND_BUTTON){
-            sendButton.setEnabled(true);
-        }
 
+    @Subscribe
+    public void onEvent(Events event){
+        switch (event){
+            case ACTIVATE_SEND_BUTTON:
+                sendButton.setEnabled(true);
+                break;
+            case DEACTIVATE_SEND_BUTTON:
+                sendButton.setEnabled(false);
+                break;
+        }
     }
 
     private static class RequestUpperPanel extends BasePanel {

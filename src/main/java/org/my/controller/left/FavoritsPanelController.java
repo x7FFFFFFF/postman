@@ -1,8 +1,8 @@
 package org.my.controller.left;
 
-import org.my.bus.IBusEventListener;
-import org.my.bus.Message;
-import org.my.bus.MessageBus;
+import org.my.bus.MessageBusSingleton;
+import org.my.bus.Subscribe;
+import org.my.bus.TargetEvent;
 import org.my.http.client.HttpRequest;
 import org.my.view.right.request.RequestSourcePanel;
 //import org.my.view.left.FavoritsPanel;
@@ -20,15 +20,27 @@ import java.awt.event.MouseEvent;
 /**
  * Created on 19.11.2017.
  */
-public enum FavoritsPanelController  implements IBusEventListener {
+public enum FavoritsPanelController   {
 
     INSTANCE;
 
-    public enum Actions {
-        POPUP_SHOW,
-        UPDATE_UI,
-        LOAD_REQUEST_FROM_TREE
 
+    public static class PopupShowEvent extends TargetEvent<MouseEvent>{
+        public PopupShowEvent(MouseEvent target) {
+            super( target);
+        }
+    }
+
+    public static class LoadRequestFromTreeEvent extends TargetEvent<RequestNode>{
+        public LoadRequestFromTreeEvent(RequestNode target) {
+            super( target);
+        }
+    }
+
+
+
+    public enum Events {
+        UPDATE_UI
     }
     public static final String CREATE_FOLDER = "createFolder";
     public static final String CREATE_REQUEST = "createRequest";
@@ -53,7 +65,7 @@ public enum FavoritsPanelController  implements IBusEventListener {
         this.initialized = true;
         this.model = model;
         this.selectionModel = selectionModel;
-        MessageBus.INSTANCE.publishListener(this);
+
     }
 
 
@@ -104,7 +116,7 @@ public enum FavoritsPanelController  implements IBusEventListener {
         if ( this.currentRequestNode!=null){
             final Object userObject = this.currentRequestNode.getUserObject();
             if (isRequest(userObject)) {
-                MessageBus.INSTANCE.sentMessage(Actions.LOAD_REQUEST_FROM_TREE, userObject);
+                MessageBusSingleton.INSTANCE.get().post(new LoadRequestFromTreeEvent((RequestNode)userObject));
             }
         }
     }
@@ -125,7 +137,7 @@ public enum FavoritsPanelController  implements IBusEventListener {
         requestNode.setRow(leadSelectionRow + childCount + 1);
         DefaultMutableTreeNode newChild = new DefaultMutableTreeNode(requestNode);
         folder.add(newChild);
-        MessageBus.INSTANCE.sentMessage(Actions.UPDATE_UI);
+        MessageBusSingleton.INSTANCE.get().post(Events.UPDATE_UI);
     }
 
 
@@ -133,11 +145,11 @@ public enum FavoritsPanelController  implements IBusEventListener {
     private void addFolder(String folderName) {
         DefaultMutableTreeNode folder = getFolder();
         folder.add(new DefaultMutableTreeNode(new Folder(folderName)));
-        MessageBus.INSTANCE.sentMessage(Actions.UPDATE_UI);
+        MessageBusSingleton.INSTANCE.get().post(Events.UPDATE_UI);
     }
 
     private void treeMouseRightClicked(MouseEvent e) {
-        MessageBus.INSTANCE.sentMessage(Actions.POPUP_SHOW, e);
+        MessageBusSingleton.INSTANCE.get().post(new PopupShowEvent(e));
      }
 
 
@@ -175,13 +187,9 @@ public enum FavoritsPanelController  implements IBusEventListener {
         return popupListener;
     }
 
-    @Override
-    public void onEvent(Message message) {
-        if (message.getId()== RequestSourcePanel.Actions.SAVE_BUTTON_PUSHED) {
-            final HttpRequest request = message.getSource();
-            addRequest(request);
-
-        }
+    @Subscribe
+    public void onEvent(RequestSourcePanel.SaveButtonPushedEvent event) {
+            addRequest(event.getTarget());
     }
 
 

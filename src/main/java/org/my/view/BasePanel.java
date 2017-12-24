@@ -1,8 +1,10 @@
 package org.my.view;
 
+import org.my.bus.Subscribe;
 import org.my.helpers.LocaleManager;
 
 import javax.swing.*;
+import java.util.stream.Stream;
 
 /**
  * Created by paramonov on 23.08.17.
@@ -16,6 +18,10 @@ public  class BasePanel extends JPanel {
         setName(name);
         setDefaultLayout();
         //MessageBus.get().publishListener(this::onEvent);
+        if (Stream.of(getClass().getDeclaredMethods()).anyMatch(m->m.isAnnotationPresent(Subscribe.class))){
+            System.out.println("subscriber = " + getClass());
+
+        }
 
     }
 

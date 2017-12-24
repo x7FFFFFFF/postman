@@ -106,7 +106,7 @@ public class EventBus implements IEventBus {
     /**
      * Creates a new EventBus named "default".
      */
-    public EventBus() {
+     EventBus() {
         this("default");
     }
 
@@ -116,7 +116,7 @@ public class EventBus implements IEventBus {
      * @param identifier  a brief name for this bus, for logging purposes.  Should
      *                    be a valid Java identifier.
      */
-    public EventBus(String identifier) {
+     EventBus(String identifier) {
         if (identifier==null){
             throw new NullPointerException();
         }
@@ -165,6 +165,8 @@ public class EventBus implements IEventBus {
             }
         }
     }
+
+
 
 
     /**

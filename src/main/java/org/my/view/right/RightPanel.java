@@ -1,8 +1,7 @@
 package org.my.view.right;
 
-import org.my.bus.IBusEventListener;
-import org.my.bus.Message;
-import org.my.bus.MessageBus;
+import org.my.bus.MessageBusSingleton;
+import org.my.bus.Subscribe;
 import org.my.controller.left.FavoritsPanelController;
 import org.my.controller.left.RequestNode;
 import org.my.controller.right.request.RequestPanelController;
@@ -16,7 +15,7 @@ import java.awt.*;
 /**
  * Created by paramonov on 17.08.17.
  */
-public class RightPanel extends BasePanel implements IBusEventListener {
+public class RightPanel extends BasePanel  {
     JTabbedPane tabbedPane = new JTabbedPane();
     public RightPanel() {
 
@@ -26,7 +25,7 @@ public class RightPanel extends BasePanel implements IBusEventListener {
         splitPane.setOneTouchExpandable(true);
         splitPane.setDividerLocation(500);
         UiHelper.flattenSplitPane(splitPane);*/
-        MessageBus.INSTANCE.publishListener(RequestPanelController.INSTANCE);
+
 
 
 
@@ -45,7 +44,9 @@ public class RightPanel extends BasePanel implements IBusEventListener {
 
     private Component createTab( RequestNode requestNode ){
         RequestSourcePanel requestPane = new RequestSourcePanel(requestNode);
-        BasePanel responsePane = new ResponseSourcePanel();
+        MessageBusSingleton.INSTANCE.get().register(requestPane);
+        ResponseSourcePanel responsePane = new ResponseSourcePanel();
+        MessageBusSingleton.INSTANCE.get().register(responsePane);
         JTabbedPane tabbedPane = new JTabbedPane();
         tabbedPane.addTab(requestPane.getTranslatedName(), null, requestPane,
                 requestPane.getTranslatedName());
@@ -53,19 +54,16 @@ public class RightPanel extends BasePanel implements IBusEventListener {
         tabbedPane.addTab(responsePane.getTranslatedName(), null, responsePane,
                 responsePane.getTranslatedName());
 
-        MessageBus.INSTANCE.publishListener(requestPane);
         return tabbedPane;
     }
 
 
-    @Override
-    public void onEvent(Message message) {
-        if (message.getId() == FavoritsPanelController.Actions.LOAD_REQUEST_FROM_TREE) {
-            RequestNode requestNode = message.getSource();
+    @Subscribe
+    public void onEvent(FavoritsPanelController.LoadRequestFromTreeEvent event) {
+            RequestNode requestNode = event.getTarget();
             if (requestNode.getRequest()!=null) {
                 Component tab = createTab(requestNode);
             //TODO:
             }
-        }
     }
 }

@@ -1,11 +1,12 @@
 package org.my.view.left;
 
+import org.my.bus.MessageBusSingleton;
+import org.my.bus.Subscribe;
 import org.my.controller.left.Element;
 import org.my.controller.left.FavoritsPanelController;
 import org.my.controller.left.Folder;
 import org.my.controller.left.RequestNode;
-import org.my.bus.IBusEventListener;
-import org.my.bus.Message;
+
 import org.my.view.BasePanel;
 
 import javax.swing.JComponent;
@@ -26,7 +27,7 @@ import java.awt.event.MouseEvent;
 /**
  * Created by paramonov on 17.08.17.
  */
-public class FavoritsPanel extends BasePanel implements IBusEventListener {
+public class FavoritsPanel extends BasePanel  {
 
     private JTree tree = new JTree();
     private DefaultMutableTreeNode rootNode;
@@ -34,9 +35,6 @@ public class FavoritsPanel extends BasePanel implements IBusEventListener {
     private DefaultMutableTreeNode currentRequestNode;
 
     private JPopupMenu popup = new JPopupMenu();
-    public enum Actions {
-          POPUP_SHOW
-    }
 
 
     public FavoritsPanel() {
@@ -54,6 +52,7 @@ public class FavoritsPanel extends BasePanel implements IBusEventListener {
         addOnePane(jScrollPane);
 
         FavoritsPanelController favoritsPanelController = FavoritsPanelController.INSTANCE;
+        MessageBusSingleton.INSTANCE.get().register(favoritsPanelController);
         favoritsPanelController.init(tree.getModel(), tree.getSelectionModel());
         tree.addMouseListener(favoritsPanelController.getMouseListener());
         initPopupMenu(favoritsPanelController.getPopupListener());
@@ -139,15 +138,16 @@ public class FavoritsPanel extends BasePanel implements IBusEventListener {
         }
     }
 
+    @Subscribe
+    public void onEventShowPopup(FavoritsPanelController.PopupShowEvent message) {
+        MouseEvent e = message.getTarget();
+        popup.show((JComponent) e.getSource(), e.getX(), e.getY());
+    }
 
 
-
-    @Override
-    public void onEvent(Message message) {
-      if (message.getId()==Actions.POPUP_SHOW){
-            MouseEvent e = message.getSource();
-            popup.show((JComponent) e.getSource(), e.getX(), e.getY());
-        } else if (message.getId()==FavoritsPanelController.Actions.UPDATE_UI){
+    @Subscribe
+    public void onEventUpdate(FavoritsPanelController.Events event) {
+      if (event == FavoritsPanelController.Events.UPDATE_UI){
            tree.updateUI();
         }
     }

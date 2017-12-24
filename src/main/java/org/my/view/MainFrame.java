@@ -1,6 +1,6 @@
 package org.my.view;
 
-import org.my.bus.MessageBus;
+import org.my.bus.MessageBusSingleton;
 import org.my.view.left.LeftPanel;
 import org.my.view.right.RightPanel;
 
@@ -34,7 +34,7 @@ public final class MainFrame extends JFrame {
     }
 
     private MainFrame() {
-        MessageBus.INSTANCE.publishListener(rightPane);
+        MessageBusSingleton.INSTANCE.get().register(rightPane);
         Container contentPane = getContentPane();
         contentPane.setLayout(new BorderLayout());
 

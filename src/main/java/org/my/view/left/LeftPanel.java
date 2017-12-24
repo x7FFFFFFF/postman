@@ -1,6 +1,7 @@
 package org.my.view.left;
 
-import org.my.bus.MessageBus;
+
+import org.my.bus.MessageBusSingleton;
 import org.my.view.BasePanel;
 
 import javax.swing.*;
@@ -14,7 +15,7 @@ public class LeftPanel extends BasePanel {
 
         JTabbedPane tabbedPane = new JTabbedPane();
         FavoritsPanel favoritsPane = new FavoritsPanel();
-        MessageBus.INSTANCE.publishListener(favoritsPane);
+        MessageBusSingleton.INSTANCE.get().register(favoritsPane);
         tabbedPane.addTab(favoritsPane.getTranslatedName(), null, favoritsPane,
                 "Does nothing");
 
