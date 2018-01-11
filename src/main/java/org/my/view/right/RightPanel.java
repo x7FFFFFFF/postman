@@ -11,34 +11,22 @@ import org.my.view.right.response.ResponseSourcePanel;
 
 import javax.swing.JTabbedPane;
 import java.awt.*;
+import java.util.HashMap;
+import java.util.Map;
 
 /**
  * Created by paramonov on 17.08.17.
  */
 public class RightPanel extends BasePanel  {
-    JTabbedPane tabbedPane = new JTabbedPane();
+    private JTabbedPane tabbedPane = new JTabbedPane();
+    private Map<Integer,RequestNode> openedEditors  = new HashMap<>();
     public RightPanel() {
-
-
-       /* JSplitPane splitPane = new JSplitPane(JSplitPane.VERTICAL_SPLIT,
-                requestPane, responsePane);
-        splitPane.setOneTouchExpandable(true);
-        splitPane.setDividerLocation(500);
-        UiHelper.flattenSplitPane(splitPane);*/
-
-
-
-
 
 
 
         addOnePane(tabbedPane);
 
-      /*  final Component requestSourcePanel = UiHelper.getChildNamed(requestPane, RequestSourcePanel.class.getCanonicalName());
 
-        final PropertyChangeListener responseSourcePanel = (PropertyChangeListener)UiHelper.getChildNamed(responsePane, ResponseSourcePanel.class.getCanonicalName());
-
-        requestSourcePanel.addPropertyChangeListener(responseSourcePanel);*/
 
     }
 
@@ -61,9 +49,13 @@ public class RightPanel extends BasePanel  {
     @Subscribe
     public void onEvent(FavoritsPanelController.LoadRequestFromTreeEvent event) {
             RequestNode requestNode = event.getTarget();
-            if (requestNode.getRequest()!=null) {
+            if (openedEditors.containsKey(requestNode.getRow())){
+
+            } else {
+
                 Component tab = createTab(requestNode);
-            //TODO:
+                //TODO:
+                tabbedPane.add(requestNode.getName(), tab);
             }
     }
 }

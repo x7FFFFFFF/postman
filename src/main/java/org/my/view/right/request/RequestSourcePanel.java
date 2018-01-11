@@ -30,9 +30,9 @@ public class RequestSourcePanel extends BasePanel  {
             super(target);
         }
     }
-    public static class SaveButtonPushedEvent extends TargetEvent<HttpRequest> {
-        public SaveButtonPushedEvent(HttpRequest target) {
-            super(target);
+    public static class SaveButtonPushedEvent extends TargetEvent<RequestNode> {
+        public SaveButtonPushedEvent(RequestNode target) {
+            super(new RequestNode(target));
         }
     }
     public enum Events {
@@ -51,8 +51,8 @@ public class RequestSourcePanel extends BasePanel  {
 
     public RequestSourcePanel( RequestNode requestNode ) {
         this.requestNode = requestNode;
-
-
+        this.requestHeadersPane.setText(requestNode.getRequestHeader());
+        this.requestBodyPane.setText(requestNode.getRequestBody());
         JSplitPane splitPane = UiHelper.createSplitPane(JSplitPane.VERTICAL_SPLIT, createUpperPanel(), createBottomPanel());
         addOnePane(splitPane);
        // sendButton.setAction(new SendRequestAction(requestHeadersPane.getDocument(), requestBodyPane.getDocument(), sendButton.getModel(), this ));
@@ -60,7 +60,7 @@ public class RequestSourcePanel extends BasePanel  {
              MessageBusSingleton.INSTANCE.get().post(new SendButtonPushedEvent(getHttpRequest()))
         );
         saveButton.addActionListener(e->
-            MessageBusSingleton.INSTANCE.get().post(new SaveButtonPushedEvent(getHttpRequest()))
+            MessageBusSingleton.INSTANCE.get().post(new SaveButtonPushedEvent(requestNode))
         );
 
 

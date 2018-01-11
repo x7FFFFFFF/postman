@@ -1,20 +1,53 @@
 package org.my.controller.left;
 
-import org.my.http.client.HttpRequest;
+
 
 /**
  * Created on 09.12.2017.
  */
 public class RequestNode extends Element  {
-    private HttpRequest request;
+    private String requestHeader;
+    private String requestBody;
     private int row;
 
-    public RequestNode(HttpRequest request) {
-        super((request!=null)?request.toString():"new request");
-        this.request = request;
-        //this.row = row;
+    public  static RequestNode createNewEmpty(){
+        return new RequestNode("New Request", "", "", 0);
     }
 
+    public RequestNode(RequestNode node) {
+        super(node.getName());
+        this.requestHeader = node.getRequestHeader();
+        this.requestBody = node.getRequestBody();
+        this.row = node.getRow();
+    }
+
+    public RequestNode(String name, String requestHeader, String requestBody, int row) {
+        super(name);
+        this.requestHeader = requestHeader;
+        this.requestBody = requestBody;
+        this.row = row;
+    }
+    public void update(RequestNode node){
+        this.requestHeader = node.getRequestHeader();
+        this.requestBody = node.getRequestBody();
+        this.row = node.getRow();
+    }
+
+    public String getRequestHeader() {
+        return requestHeader;
+    }
+
+    public void setRequestHeader(String requestHeader) {
+        this.requestHeader = requestHeader;
+    }
+
+    public String getRequestBody() {
+        return requestBody;
+    }
+
+    public void setRequestBody(String requestBody) {
+        this.requestBody = requestBody;
+    }
 
     public int getRow() {
         return row;
@@ -24,11 +57,18 @@ public class RequestNode extends Element  {
         this.row = row;
     }
 
-    public HttpRequest getRequest() {
-        return request;
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+
+        RequestNode that = (RequestNode) o;
+
+        return row == that.row;
     }
 
-    public void setRequest(HttpRequest request) {
-        this.request = request;
+    @Override
+    public int hashCode() {
+        return row;
     }
 }

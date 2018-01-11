@@ -16,6 +16,8 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
+import java.util.HashSet;
+import java.util.Set;
 
 /**
  * Created on 19.11.2017.
@@ -23,7 +25,7 @@ import java.awt.event.MouseEvent;
 public enum FavoritsPanelController   {
 
     INSTANCE;
-
+    private final Set<RequestNode> nodeSet = new HashSet<>();
 
     public static class PopupShowEvent extends TargetEvent<MouseEvent>{
         public PopupShowEvent(MouseEvent target) {
@@ -97,8 +99,13 @@ public enum FavoritsPanelController   {
                     break;
 
                 case   CREATE_REQUEST:
+                    RequestNode node = RequestNode.createNewEmpty();
+                    DefaultMutableTreeNode folder = getFolder();
+                    int childCount = model.getChildCount(folder);
+                    int leadSelectionRow = selectionModel.getLeadSelectionRow();
+                    node.setRow(leadSelectionRow + childCount + 1);
 
-                    addRequest(null);
+                    add(folder, node);
                     //MessageBus.INSTANCE.sentMessage(FavoritsPanel.Actions.POPUP_ADD_REQUEST);
                     break;
 
@@ -128,19 +135,25 @@ public enum FavoritsPanelController   {
         return currentFolderNode;
     }
 
-    private void addRequest(HttpRequest request) {
-        DefaultMutableTreeNode folder = getFolder();
-        int childCount = this.model.getChildCount(folder);
-        int leadSelectionRow = this.selectionModel.getLeadSelectionRow();
-
-        RequestNode requestNode = new RequestNode(request);
-        requestNode.setRow(leadSelectionRow + childCount + 1);
-        DefaultMutableTreeNode newChild = new DefaultMutableTreeNode(requestNode);
-        folder.add(newChild);
+    private void add(DefaultMutableTreeNode parent, RequestNode requestNode) {
+        RequestNode node = new RequestNode(requestNode);
+        nodeSet.add(node);
+        DefaultMutableTreeNode newChild = new DefaultMutableTreeNode(node);
+        parent.add(newChild);
         MessageBusSingleton.INSTANCE.get().post(Events.UPDATE_UI);
     }
 
+    private void edit(RequestNode requestNode) {
+        RequestNode nodeEdit = new RequestNode(requestNode);
+        if (!nodeSet.contains(nodeEdit)) {
+            throw new IllegalArgumentException();
+        }
 
+        nodeSet.stream().filter(o->o.equals(requestNode)).findAny() //TODO: map
+                .ifPresent(node1 ->
+                    node1.update(nodeEdit)
+                );
+    }
 
     private void addFolder(String folderName) {
         DefaultMutableTreeNode folder = getFolder();
@@ -189,7 +202,8 @@ public enum FavoritsPanelController   {
 
     @Subscribe
     public void onEvent(RequestSourcePanel.SaveButtonPushedEvent event) {
-            addRequest(event.getTarget());
+        RequestNode httpRequest = event.getTarget();
+        edit(httpRequest);
     }
 
 
